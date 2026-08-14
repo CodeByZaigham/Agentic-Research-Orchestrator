@@ -1,0 +1,9 @@
+langchain
+langchain-core
+langchain-community
+langchain-mistralai
+tavily-python
+beautifulsoup4
+fastapi
+uvicorn
+python-dotenv
