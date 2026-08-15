@@ -42,3 +42,12 @@ Production-grade, fully autonomous multi-agent AI system orchestrated via LangCh
                                   Improved Report
                                        ↓
                                     Checker
+
+# Started Working !!
+
+- I finally made it work.
+
+<p align="center">
+  <img src="screenshots/first working state.PNG" alt="fastAPI swagger UI" width="100%">
+</p>
+<div align="center">
