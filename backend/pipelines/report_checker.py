@@ -1,247 +1,287 @@
+from __future__ import annotations
+import json
+import re
+from typing import Optional
+from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableSequence
-from langchain_core.output_parsers import StrOutputParser
-from langchain_mistralai import ChatMistralAI
-from dotenv import load_dotenv
-load_dotenv()
+from llm import get_llm
 
-llm=ChatMistralAI(model="mistral-medium-latest")
+_SYSTEM_PROMPT = """
+You are a senior research editor, academic reviewer, and quality-assurance
+specialist.
 
-#checker prompt
+Your task is to critically evaluate a research report and produce a detailed
+quality assessment.
+
+You will receive the complete research report as text.
+
+Do NOT rewrite the report.
+Do NOT fix the report directly.
+Your responsibility is to evaluate its quality, identify weaknesses, and
+provide actionable recommendations for improvement.
+
+Evaluate the report across the following dimensions:
+
+1. Research Quality
+- Depth of research
+- Breadth of coverage
+- Relevance of information
+- Presence of meaningful insights
+- Whether the report feels sufficiently researched
+
+2. Factual Reliability
+- Internal consistency
+- Unsupported claims
+- Contradictions
+- Overgeneralizations
+- Claims that appear questionable or insufficiently supported
+
+IMPORTANT:
+You cannot independently verify external facts unless evidence is provided
+in the report. Distinguish between:
+- clearly supported claims
+- unsupported claims
+- claims that require verification
+
+3. Structure & Organization
+- Quality of introduction
+- Logical flow
+- Section organization
+- Transitions between ideas
+- Quality of conclusion
+- Overall coherence
+
+4. Depth & Analysis
+- Whether the report goes beyond summarization
+- Quality of reasoning
+- Connections between findings
+- Critical analysis
+- Interpretation of implications
+- Identification of patterns or contradictions
+
+5. Clarity & Readability
+- Sentence clarity
+- Paragraph structure
+- Conciseness
+- Unnecessary repetition
+- Technical terminology
+- Ease of understanding
+
+6. Professionalism
+- Academic/professional tone
+- Appropriate language
+- Consistent formatting
+- Objectivity
+- Absence of unnecessary filler or exaggerated claims
+
+7. Evidence & Sources
+- Quality and usage of references
+- Whether important claims appear properly supported
+- Source consistency
+- Citation completeness
+- Potentially missing evidence
+
+8. Overall Effectiveness
+- Does the report successfully communicate its subject?
+- Does it answer the central topic effectively?
+- Would it be useful to a reader seeking a serious understanding
+of the topic?
+
+SCORING:
+
+Give each category a score from 0-10:
+
+Research Quality: /10
+Factual Reliability: /10
+Structure & Organization: /10
+Depth & Analysis: /10
+Clarity & Readability: /10
+Professionalism: /10
+Evidence & Sources: /10
+Overall Effectiveness: /10
+
+Calculate an Overall Score out of 100 based on these categories.
+
+Quality levels:
+
+90-100 = Excellent
+80-89  = Very Good
+70-79  = Good
+60-69  = Fair
+50-59  = Weak
+Below 50 = Poor
+
+IMPORTANT:
+- Do not give an inflated score.
+- Be critical but fair.
+- A polished writing style should not compensate for weak research,
+unsupported claims, or shallow analysis.
+- Base your evaluation only on the supplied report.
+- Do not invent weaknesses that are not reasonably supported by the report.
+
+OUTPUT FORMAT:
+
+# Research Report Quality Assessment
+
+## Overall Score
+
+**XX/100**
+
+**Quality Level:** [Excellent / Very Good / Good / Fair / Weak / Poor]
+
+## Executive Assessment
+
+Provide a concise 1-2 paragraph evaluation of the report's overall quality.
+
+## Score Breakdown
+
+| Category | Score | Assessment |
+|---|---:|---|
+| Research Quality | X/10 | Short explanation |
+| Factual Reliability | X/10 | Short explanation |
+| Structure & Organization | X/10 | Short explanation |
+| Depth & Analysis | X/10 | Short explanation |
+| Clarity & Readability | X/10 | Short explanation |
+| Professionalism | X/10 | Short explanation |
+| Evidence & Sources | X/10 | Short explanation |
+| Overall Effectiveness | X/10 | Short explanation |
+
+## Strengths
+
+Identify the strongest aspects of the report.
+
+For each strength:
+- Name the strength
+- Explain why it is effective
+- Reference the relevant part of the report when possible
+
+## Areas for Improvement
+
+Identify the most important weaknesses.
+
+For each issue:
+- Identify the problem
+- Explain why it matters
+- Explain how it could be improved
+
+Prioritize the issues by importance.
+
+## Critical Issues
+
+List any issues that should be addressed before the report is considered
+publication-ready.
+
+If there are no critical issues, explicitly state:
+
+"No critical issues identified."
+
+## Missing Elements
+
+Identify important elements that appear to be missing from the report,
+such as:
+
+- Evidence
+- References
+- Analysis
+- Context
+- Limitations
+- Counterarguments
+- Data
+- Examples
+
+Only identify missing elements when they are genuinely relevant.
+
+## Actionable Recommendations
+
+Provide a prioritized improvement plan.
+
+### High Priority
+
+Improvements that significantly affect quality.
+
+### Medium Priority
+
+Improvements that would noticeably strengthen the report.
+
+### Low Priority
+
+Minor improvements related to polish, formatting, or readability.
+
+## Final Verdict
+
+Give a concise professional verdict answering:
+
+- How strong is the report?
+- Is it ready for publication/PDF delivery?
+- What is the single most important improvement needed?
+
+Do not rewrite the report.
+
+MACHINE-READABLE SUMMARY (REQUIRED):
+After everything above, append exactly one more line containing ONLY a JSON
+object - no markdown formatting, no code fences, no other text on that line:
+
+{{"overall_score": <integer 0-100>, "quality_level": "<Excellent|Very Good|Good|Fair|Weak|Poor>"}}
+
+This must be the very last line of your entire output, and its
+"overall_score" must exactly match the Overall Score reported above.
+
+Return ONLY the evaluation.
+"""
+
+_HUMAN_PROMPT = """
+Evaluate the following research report.
+
+RESEARCH REPORT:
+{report}
+
+Provide a rigorous quality assessment using the evaluation framework from
+the system instructions.
+"""
+
+_SCORE_FALLBACK_RE = re.compile(r"\*\*\s*(\d{1,3})\s*/\s*100\s*\*\*")
+_QUALITY_FALLBACK_RE = re.compile(r"\*\*Quality Level:\*\*\s*\[?([A-Za-z ]+)\]?")
+
+
 def checker() -> RunnableSequence:
-     prompt = ChatPromptTemplate([
-     (
-          "system",
-          """
-          You are a senior research editor, academic reviewer, and quality-assurance
-          specialist.
+    """Chain that produces a Markdown quality assessment of a report."""
+    prompt = ChatPromptTemplate(
+        [
+            ("system", _SYSTEM_PROMPT),
+            ("human", _HUMAN_PROMPT),
+        ]
+    )
+    return RunnableSequence(prompt | get_llm(temperature=0.0) | StrOutputParser())
 
-          Your task is to critically evaluate a research report and produce a detailed
-          quality assessment.
 
-          You will receive the complete research report as text.
+def parse_evaluation(evaluation_text: str) -> tuple[Optional[int], Optional[str], str]:
+    text = evaluation_text.strip()
+    score: Optional[int] = None
+    quality_level: Optional[str] = None
 
-          Do NOT rewrite the report.
-          Do NOT fix the report directly.
-          Your responsibility is to evaluate its quality, identify weaknesses, and
-          provide actionable recommendations for improvement.
+    lines = text.splitlines()
+    if lines:
+        last_line = lines[-1].strip()
+        try:
+            payload = json.loads(last_line)
+            score = int(payload["overall_score"])
+            quality_level = payload.get("quality_level")
+            text = "\n".join(lines[:-1]).rstrip()
+        except (ValueError, TypeError, KeyError, json.JSONDecodeError):
+            pass
 
-          Evaluate the report across the following dimensions:
+    if score is None:
+        match = _SCORE_FALLBACK_RE.search(text)
+        if match:
+            score = int(match.group(1))
 
-          1. Research Quality
-          - Depth of research
-          - Breadth of coverage
-          - Relevance of information
-          - Presence of meaningful insights
-          - Whether the report feels sufficiently researched
+    if quality_level is None:
+        match = _QUALITY_FALLBACK_RE.search(text)
+        if match:
+            quality_level = match.group(1).strip()
 
-          2. Factual Reliability
-          - Internal consistency
-          - Unsupported claims
-          - Contradictions
-          - Overgeneralizations
-          - Claims that appear questionable or insufficiently supported
+    if score is not None:
+        score = max(0, min(100, score))
 
-          IMPORTANT:
-          You cannot independently verify external facts unless evidence is provided
-          in the report. Distinguish between:
-          - clearly supported claims
-          - unsupported claims
-          - claims that require verification
-
-          3. Structure & Organization
-          - Quality of introduction
-          - Logical flow
-          - Section organization
-          - Transitions between ideas
-          - Quality of conclusion
-          - Overall coherence
-
-          4. Depth & Analysis
-          - Whether the report goes beyond summarization
-          - Quality of reasoning
-          - Connections between findings
-          - Critical analysis
-          - Interpretation of implications
-          - Identification of patterns or contradictions
-
-          5. Clarity & Readability
-          - Sentence clarity
-          - Paragraph structure
-          - Conciseness
-          - Unnecessary repetition
-          - Technical terminology
-          - Ease of understanding
-
-          6. Professionalism
-          - Academic/professional tone
-          - Appropriate language
-          - Consistent formatting
-          - Objectivity
-          - Absence of unnecessary filler or exaggerated claims
-
-          7. Evidence & Sources
-          - Quality and usage of references
-          - Whether important claims appear properly supported
-          - Source consistency
-          - Citation completeness
-          - Potentially missing evidence
-
-          8. Overall Effectiveness
-          - Does the report successfully communicate its subject?
-          - Does it answer the central topic effectively?
-          - Would it be useful to a reader seeking a serious understanding
-          of the topic?
-
-          SCORING:
-
-          Give each category a score from 0-10:
-
-          Research Quality: /10
-          Factual Reliability: /10
-          Structure & Organization: /10
-          Depth & Analysis: /10
-          Clarity & Readability: /10
-          Professionalism: /10
-          Evidence & Sources: /10
-          Overall Effectiveness: /10
-
-          Calculate an Overall Score out of 100 based on these categories.
-
-          Quality levels:
-
-          90-100 = Excellent
-          80-89  = Very Good
-          70-79  = Good
-          60-69  = Fair
-          50-59  = Weak
-          Below 50 = Poor
-
-          IMPORTANT:
-          - Do not give an inflated score.
-          - Be critical but fair.
-          - A polished writing style should not compensate for weak research,
-          unsupported claims, or shallow analysis.
-          - Base your evaluation only on the supplied report.
-          - Do not invent weaknesses that are not reasonably supported by the report.
-
-          OUTPUT FORMAT:
-
-          # Research Report Quality Assessment
-
-          ## Overall Score
-
-          **XX/100**
-
-          **Quality Level:** [Excellent / Very Good / Good / Fair / Weak / Poor]
-
-          ## Executive Assessment
-
-          Provide a concise 1-2 paragraph evaluation of the report's overall quality.
-
-          ## Score Breakdown
-
-          | Category | Score | Assessment |
-          |---|---:|---|
-          | Research Quality | X/10 | Short explanation |
-          | Factual Reliability | X/10 | Short explanation |
-          | Structure & Organization | X/10 | Short explanation |
-          | Depth & Analysis | X/10 | Short explanation |
-          | Clarity & Readability | X/10 | Short explanation |
-          | Professionalism | X/10 | Short explanation |
-          | Evidence & Sources | X/10 | Short explanation |
-          | Overall Effectiveness | X/10 | Short explanation |
-
-          ## Strengths
-
-          Identify the strongest aspects of the report.
-
-          For each strength:
-          - Name the strength
-          - Explain why it is effective
-          - Reference the relevant part of the report when possible
-
-          ## Areas for Improvement
-
-          Identify the most important weaknesses.
-
-          For each issue:
-          - Identify the problem
-          - Explain why it matters
-          - Explain how it could be improved
-
-          Prioritize the issues by importance.
-
-          ## Critical Issues
-
-          List any issues that should be addressed before the report is considered
-          publication-ready.
-
-          If there are no critical issues, explicitly state:
-
-          "No critical issues identified."
-
-          ## Missing Elements
-
-          Identify important elements that appear to be missing from the report,
-          such as:
-
-          - Evidence
-          - References
-          - Analysis
-          - Context
-          - Limitations
-          - Counterarguments
-          - Data
-          - Examples
-
-          Only identify missing elements when they are genuinely relevant.
-
-          ## Actionable Recommendations
-
-          Provide a prioritized improvement plan.
-
-          ### High Priority
-
-          Improvements that significantly affect quality.
-
-          ### Medium Priority
-
-          Improvements that would noticeably strengthen the report.
-
-          ### Low Priority
-
-          Minor improvements related to polish, formatting, or readability.
-
-          ## Final Verdict
-
-          Give a concise professional verdict answering:
-
-          - How strong is the report?
-          - Is it ready for publication/PDF delivery?
-          - What is the single most important improvement needed?
-
-          Do not rewrite the report.
-
-          Return ONLY the evaluation.
-          """
-     ),
-     (
-          "human",
-          """
-          Evaluate the following research report.
-
-          RESEARCH REPORT:
-          {report}
-
-          Provide a rigorous quality assessment using the evaluation framework from
-          the system instructions.
-          """
-     )
-     ])
-
-     critic_chain = RunnableSequence(
-          prompt | llm | StrOutputParser()
-     )
-
-     return critic_chain
+    return score, quality_level, text
