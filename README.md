@@ -51,3 +51,14 @@ Production-grade, fully autonomous multi-agent AI system orchestrated via LangCh
   <img src="screenshots/first working state.PNG" alt="fastAPI swagger UI" width="100%">
 </p>
 <div align="center">
+
+---
+
+# Backend Completed!!
+
+- Backend officially completed.
+
+<p align="center">
+  <img src="screenshots/backend complete.PNG" alt="fastAPI swagger UI" width="100%">
+</p>
+<div align="center">

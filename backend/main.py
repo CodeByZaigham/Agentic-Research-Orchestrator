@@ -1,55 +1,74 @@
-from fastapi import FastAPI
+from __future__ import annotations
+import logging
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from schema import topic,response
-from agents import search_agent,scrappe_agent
-from pipelines.report_generator import writer
-from pipelines.report_checker import checker
+from fastapi.responses import JSONResponse
+from config import get_settings
+from exceptions import OrchestratorError, PDFGenerationError, ReportNotFoundError
+from logger import configure_logging
+from routes import health, research
 
-app = FastAPI(title="Agentic Research Orchestrator")
+configure_logging()
+logger = logging.getLogger(__name__)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
-@app.get("/")
-def testroute():
-     return {"message":"test route working"}
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    settings = get_settings()
+    settings.reports_dir.mkdir(parents=True, exist_ok=True)
+    logger.info("%s v%s starting up", settings.app_name, settings.app_version)
+    logger.info(
+        "Pipeline config: quality_threshold=%d max_refine_iterations=%d model=%s",
+        settings.quality_score_threshold,
+        settings.max_refine_iterations,
+        settings.mistral_model,
+    )
+    yield
+    logger.info("%s shutting down", settings.app_name)
 
-@app.post("/ask")
-def givetopic(query:topic):
-     state={}
-     #step 1
-     search_results=search_agent().invoke({
-          "messages":[{"role":"user","content":f"Research {query} and give me useful information, key points, and bullet points, while also including relevant research papers, articles, and other credible sources with their direct URLs."}]
-     })
-     state["search_results"]=search_results["messages"][-1].content
 
-     #step 2
-     scrape_results=scrappe_agent().invoke({
-          "messages":[{"role":"user","content":f"Research topic: {query}\n\nRaw search results:\n{state["search_results"]}\n\nIdentify the most relevant URLs, scrape those pages, and extract the important facts, findings, insights, and supporting information useful for researching this topic. Also give authors, citations of content taken. Prioritize credible sources and ignore irrelevant, duplicate, or low-value content."}]         
-     })
-     state["scrape_results"]=scrape_results["messages"][-1].content
+def create_app() -> FastAPI:
+    settings = get_settings()
 
-     #step 3
-     report=writer().invoke({
-          "topic":query,
-          "research":(f"search results: {state["search_results"]} & scrapped web pages data: {state["scrape_results"]}")
-     })
-     state["final_report"]=report
+    app = FastAPI(
+        title=settings.app_name,
+        version=settings.app_version,
+        description=(
+            "Give it a topic, get back a researched, self-critiqued Markdown "
+            "report plus a downloadable PDF."
+        ),
+        lifespan=lifespan,
+    )
 
-     #step 4
-     score=checker().invoke({
-          "report":state["final_report"]
-     })
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins_list,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
-     state["evaluation"]=score
+    app.include_router(health.router)
+    app.include_router(research.router)
 
-     return{
-          "Report: ":state["final_report"],
-          "Evaluation: ":state["evaluation"]
-     }
+    @app.exception_handler(ReportNotFoundError)
+    async def _not_found_handler(request: Request, exc: ReportNotFoundError) -> JSONResponse:
+        return JSONResponse(status_code=404, content={"error": "report_not_found", "detail": str(exc)})
 
+    @app.exception_handler(PDFGenerationError)
+    async def _pdf_error_handler(request: Request, exc: PDFGenerationError) -> JSONResponse:
+        logger.error("PDF generation error: %s", exc)
+        return JSONResponse(status_code=500, content={"error": "pdf_generation_failed", "detail": str(exc)})
+
+    # Catches SearchAgentError, ScrapeAgentError, ReportGenerationError, and
+    # ReportEvaluationError - anything else derived from OrchestratorError.
+    @app.exception_handler(OrchestratorError)
+    async def _orchestrator_error_handler(request: Request, exc: OrchestratorError) -> JSONResponse:
+        logger.error("Pipeline error: %s", exc)
+        return JSONResponse(status_code=502, content={"error": "pipeline_failed", "detail": str(exc)})
+
+    return app
+
+
+app = create_app()
