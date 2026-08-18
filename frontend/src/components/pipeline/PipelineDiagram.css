@@ -1,0 +1,194 @@
+.pipeline-diagram {
+  width: 100%;
+}
+
+.pipeline-diagram__row {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* ---- Nodes ---- */
+
+.pipeline-diagram__item {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  width: 84px;
+  position: relative;
+}
+
+.pipeline-diagram__node-wrap {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.pipeline-diagram__ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.pipeline-diagram__ring-track {
+  fill: none;
+  stroke: var(--border-soft);
+  stroke-width: 2;
+}
+
+.pipeline-diagram__ring-fill {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke: var(--ink-500);
+}
+
+.pipeline-diagram__item--signal .pipeline-diagram__ring-fill {
+  stroke: var(--signal-500);
+}
+.pipeline-diagram__item--amber .pipeline-diagram__ring-fill {
+  stroke: var(--amber-500);
+}
+
+.pipeline-diagram__node {
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-med);
+  color: var(--text-tertiary);
+  transition: background 0.4s var(--ease-out), border-color 0.4s var(--ease-out), color 0.4s var(--ease-out),
+    box-shadow 0.4s var(--ease-out);
+}
+
+.pipeline-diagram__node[data-state="active"] {
+  color: var(--ink-950);
+  border-color: transparent;
+}
+
+.pipeline-diagram__item--signal .pipeline-diagram__node[data-state="active"] {
+  background: radial-gradient(circle at 35% 30%, var(--signal-400), var(--signal-600));
+  box-shadow: 0 0 0 6px var(--signal-glow), 0 0 24px 4px var(--signal-glow);
+}
+.pipeline-diagram__item--amber .pipeline-diagram__node[data-state="active"] {
+  background: radial-gradient(circle at 35% 30%, var(--amber-400), var(--amber-600));
+  box-shadow: 0 0 0 6px var(--amber-glow), 0 0 24px 4px var(--amber-glow);
+}
+
+.pipeline-diagram__node[data-state="complete"] {
+  border-color: transparent;
+  color: var(--ink-950);
+}
+.pipeline-diagram__item--signal .pipeline-diagram__node[data-state="complete"] {
+  background: var(--signal-500);
+}
+.pipeline-diagram__item--amber .pipeline-diagram__node[data-state="complete"] {
+  background: var(--amber-500);
+}
+
+/* ---- Labels ---- */
+
+.pipeline-diagram__label {
+  font-size: var(--step--1);
+  color: var(--text-tertiary);
+  letter-spacing: 0.04em;
+  transition: color 0.3s var(--ease-out);
+  text-align: center;
+}
+
+.pipeline-diagram__label[data-state="active"] {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.pipeline-diagram__label[data-state="complete"] {
+  color: var(--text-secondary);
+}
+
+.pipeline-diagram__badge {
+  position: absolute;
+  top: -22px;
+  font-size: 0.65rem;
+  color: var(--amber-400);
+  background: rgba(227, 162, 76, 0.12);
+  border: 1px solid rgba(227, 162, 76, 0.3);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+/* ---- Connectors ---- */
+
+.pipeline-diagram__connector {
+  flex: 1 1 auto;
+  height: 2px;
+  min-width: 20px;
+  margin-top: 29px;
+  background: var(--border-soft);
+  position: relative;
+  overflow: hidden;
+  border-radius: 2px;
+}
+
+.pipeline-diagram__connector[data-state="complete"][data-accent="signal"] {
+  background: var(--signal-600);
+}
+.pipeline-diagram__connector[data-state="complete"][data-accent="amber"] {
+  background: var(--amber-600);
+}
+
+.pipeline-diagram__connector[data-state="active"] {
+  background: var(--border-med);
+}
+
+.pipeline-diagram__connector-flow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--flow-color, var(--signal-400)), transparent);
+  background-size: 60% 100%;
+  animation: pipeline-flow 1.3s linear infinite;
+}
+
+.pipeline-diagram__connector[data-accent="signal"] .pipeline-diagram__connector-flow {
+  --flow-color: var(--signal-400);
+}
+.pipeline-diagram__connector[data-accent="amber"] .pipeline-diagram__connector-flow {
+  --flow-color: var(--amber-400);
+}
+
+@keyframes pipeline-flow {
+  from {
+    background-position: -60% 0;
+  }
+  to {
+    background-position: 160% 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .pipeline-diagram__row {
+    flex-wrap: wrap;
+    row-gap: var(--space-5);
+    justify-content: center;
+  }
+  .pipeline-diagram__connector {
+    display: none;
+  }
+  .pipeline-diagram__item {
+    width: 30%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pipeline-diagram__connector-flow {
+    animation: none;
+    background: var(--flow-color);
+    opacity: 0.5;
+  }
+}

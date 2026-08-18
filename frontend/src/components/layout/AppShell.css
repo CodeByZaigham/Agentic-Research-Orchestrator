@@ -1,0 +1,70 @@
+.app-shell {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+}
+
+.app-shell__header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-5) var(--space-6);
+}
+
+.app-shell__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.app-shell__wordmark {
+  font-size: var(--step--1);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.app-shell__reset {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: transparent;
+  border: 1px solid var(--border-med);
+  border-radius: var(--radius-pill);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--step--1);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: border-color 0.2s var(--ease-out), color 0.2s var(--ease-out), background 0.2s var(--ease-out);
+}
+
+.app-shell__reset:hover {
+  border-color: var(--border-med);
+  background: var(--bg-raised);
+  color: var(--text-primary);
+}
+
+.app-shell__main {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--space-6) var(--space-8);
+}
+
+@media (max-width: 640px) {
+  .app-shell__header {
+    padding: var(--space-4);
+  }
+  .app-shell__main {
+    padding: 0 var(--space-4) var(--space-7);
+  }
+  .app-shell__reset span {
+    display: none;
+  }
+}

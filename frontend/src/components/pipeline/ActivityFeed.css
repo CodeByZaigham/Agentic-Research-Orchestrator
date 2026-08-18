@@ -1,0 +1,27 @@
+.activity-feed {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 7.5em;
+  font-size: var(--step--1);
+  color: var(--text-tertiary);
+}
+
+.activity-feed__line {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.activity-feed__line[data-current="true"] {
+  color: var(--text-primary);
+}
+
+.activity-feed__bullet {
+  color: var(--signal-500);
+  flex-shrink: 0;
+}
+
+.activity-feed__line[data-current="true"] .activity-feed__bullet {
+  color: var(--amber-500);
+}

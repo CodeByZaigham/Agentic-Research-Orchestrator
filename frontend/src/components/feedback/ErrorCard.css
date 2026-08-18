@@ -1,0 +1,83 @@
+.error-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: var(--space-7) 0;
+}
+
+.error-card__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(217, 123, 103, 0.12);
+  border: 1px solid rgba(217, 123, 103, 0.3);
+  color: var(--brick-500);
+  margin-bottom: var(--space-5);
+}
+
+.error-card__heading {
+  font-size: var(--step-2);
+  font-weight: 500;
+  margin-bottom: var(--space-3);
+}
+
+.error-card__detail {
+  font-size: var(--step--1);
+  color: var(--text-tertiary);
+  background: var(--bg-inset);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.error-card__actions {
+  margin-top: var(--space-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.error-card__retry {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: var(--amber-500);
+  color: var(--paper-ink);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: var(--space-3) var(--space-5);
+  font-size: var(--step--1);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s var(--ease-out);
+}
+
+.error-card__retry:hover {
+  background: var(--amber-400);
+}
+
+.error-card__reset {
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: var(--step--1);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.error-card__reset:hover {
+  color: var(--text-secondary);
+}

@@ -1,0 +1,100 @@
+.running-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  max-width: 720px;
+  margin: 0 auto;
+  width: 100%;
+  padding: var(--space-6) 0;
+}
+
+.running-stage__header {
+  text-align: center;
+  margin-bottom: var(--space-7);
+}
+
+.running-stage__topic {
+  margin-top: var(--space-3);
+  font-size: clamp(1.5rem, 3.6vw, var(--step-3));
+  font-weight: 500;
+  max-width: 32ch;
+  margin-inline: auto;
+}
+
+.running-stage__panel {
+  width: 100%;
+  background: var(--bg-raised);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: var(--space-7) var(--space-6) var(--space-5);
+  box-shadow: var(--shadow-panel);
+}
+
+.running-stage__footer {
+  margin-top: var(--space-7);
+  padding-top: var(--space-5);
+  border-top: 1px solid var(--border-soft);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-5);
+}
+
+.running-stage__timer {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--step--1);
+  color: var(--text-secondary);
+  background: var(--bg-inset);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-pill);
+  padding: var(--space-2) var(--space-4);
+}
+
+.running-stage__timer-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--signal-500);
+  box-shadow: 0 0 0 3px var(--signal-glow);
+}
+
+.running-stage__timer-dot[data-holding="true"] {
+  background: var(--amber-500);
+  box-shadow: 0 0 0 3px var(--amber-glow);
+  animation: timer-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes timer-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.running-stage__note {
+  margin-top: var(--space-5);
+  font-size: var(--step--1);
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .running-stage__panel {
+    padding: var(--space-6) var(--space-4) var(--space-4);
+  }
+  .running-stage__footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .running-stage__timer {
+    align-self: center;
+  }
+}

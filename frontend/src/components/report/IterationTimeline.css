@@ -1,0 +1,67 @@
+.iteration-timeline {
+  width: 100%;
+}
+
+.iteration-timeline__title {
+  font-size: var(--step--1);
+  color: var(--text-tertiary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-4);
+}
+
+.iteration-timeline__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.iteration-timeline__item {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.iteration-timeline__rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.iteration-timeline__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--brick-500);
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.iteration-timeline__dot[data-pass="true"] {
+  background: var(--sage-500);
+}
+
+.iteration-timeline__line {
+  width: 1px;
+  flex: 1;
+  min-height: 28px;
+  background: var(--border-med);
+  margin: 4px 0;
+}
+
+.iteration-timeline__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: var(--space-5);
+}
+
+.iteration-timeline__label {
+  font-size: var(--step-0);
+  color: var(--text-primary);
+}
+
+.iteration-timeline__score {
+  font-size: var(--step--1);
+  color: var(--text-tertiary);
+}

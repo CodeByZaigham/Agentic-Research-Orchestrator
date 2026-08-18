@@ -1,5 +1,3 @@
-// Mirrors backend/schema.py exactly. Keep in sync if the API changes.
-
 export interface IterationLog {
   iteration: number;
   score: number | null;

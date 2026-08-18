@@ -1,0 +1,96 @@
+.evaluation-panel {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-md);
+  background: var(--bg-raised);
+  overflow: hidden;
+}
+
+.evaluation-panel__toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: var(--space-4) var(--space-5);
+  font-size: var(--step--1);
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+}
+
+.evaluation-panel__toggle:hover {
+  color: var(--text-primary);
+}
+
+.evaluation-panel__content-wrap {
+  overflow: hidden;
+}
+
+.evaluation-panel__content {
+  padding: 0 var(--space-5) var(--space-5);
+  font-size: var(--step--1);
+  line-height: 1.7;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border-soft);
+  padding-top: var(--space-4);
+}
+
+.evaluation-panel__content h1,
+.evaluation-panel__content h2,
+.evaluation-panel__content h3 {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  font-size: var(--step-0);
+  font-weight: 700;
+  margin: var(--space-5) 0 var(--space-2);
+}
+
+.evaluation-panel__content h1:first-child,
+.evaluation-panel__content h2:first-child {
+  margin-top: 0;
+}
+
+.evaluation-panel__content p {
+  margin: 0 0 var(--space-3);
+}
+
+.evaluation-panel__content ul,
+.evaluation-panel__content ol {
+  margin: 0 0 var(--space-3);
+  padding-left: 1.3em;
+}
+
+.evaluation-panel__content li {
+  margin-bottom: var(--space-2);
+}
+
+.evaluation-panel__content strong {
+  color: var(--text-primary);
+}
+
+.evaluation-panel__content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0 0 var(--space-4);
+  font-size: 0.85em;
+}
+
+.evaluation-panel__content th,
+.evaluation-panel__content td {
+  border: 1px solid var(--border-soft);
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+}
+
+.evaluation-panel__content th {
+  background: var(--bg-inset);
+  color: var(--text-primary);
+}
+
+.evaluation-panel__content hr {
+  border: none;
+  border-top: 1px solid var(--border-soft);
+  margin: var(--space-5) 0;
+}

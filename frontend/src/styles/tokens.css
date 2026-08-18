@@ -1,0 +1,106 @@
+/*
+  Design tokens for the Orchestrator UI.
+
+  Concept: a research instrument's control room. The shell is a deep,
+  cool "ink" — not pure black — where the multi-agent pipeline runs and
+  glows. The one thing that leaves the machine is a document: reports
+  render on a warm "paper" surface, a deliberate contrast against the
+  ink shell, so the product's actual output (a report) always reads as
+  a physical, finished thing rather than more UI chrome.
+
+  Two accent signals are used with intent, not decoration:
+    --signal (cool cyan)  → retrieval / reading / evidence-gathering
+    --amber  (warm brass) → synthesis / judgment / the finished artifact
+*/
+
+:root {
+  /* ---- Core palette ---- */
+  --ink-950: #0c0d13;
+  --ink-900: #12141c;
+  --ink-800: #181b26;
+  --ink-700: #1e2230;
+  --ink-600: #262b3c;
+  --ink-500: #343a4f;
+  --ink-400: #4b5169;
+
+  --mist-300: #6a7089;
+  --mist-200: #9096ac;
+  --mist-100: #c2c6d6;
+  --mist-050: #e7e9f0;
+
+  --paper-100: #f7f2e4;
+  --paper-200: #f1ead6;
+  --paper-ink: #241f14;
+  --paper-ink-soft: #524a38;
+
+  --amber-400: #f0b565;
+  --amber-500: #e3a24c;
+  --amber-600: #c6842f;
+  --amber-glow: rgba(227, 162, 76, 0.35);
+
+  --signal-400: #7fd6df;
+  --signal-500: #57c2ce;
+  --signal-600: #3a9aa6;
+  --signal-glow: rgba(87, 194, 206, 0.35);
+
+  --sage-500: #8fb88a;
+  --brick-500: #d97b67;
+
+  /* ---- Semantic ---- */
+  --bg: var(--ink-900);
+  --bg-raised: var(--ink-800);
+  --bg-inset: var(--ink-950);
+  --border-soft: rgba(255, 255, 255, 0.08);
+  --border-med: rgba(255, 255, 255, 0.14);
+  --text-primary: var(--mist-050);
+  --text-secondary: var(--mist-200);
+  --text-tertiary: var(--mist-300);
+  --accent: var(--amber-500);
+  --accent-strong: var(--amber-400);
+  --signal: var(--signal-500);
+
+  /* ---- Type ---- */
+  --font-display: "Fraunces", "Iowan Old Style", ui-serif, Georgia, serif;
+  --font-body: "Manrope", -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --step--1: 0.8125rem;
+  --step-0: 0.9375rem;
+  --step-1: 1.125rem;
+  --step-2: 1.375rem;
+  --step-3: 1.75rem;
+  --step-4: 2.375rem;
+  --step-5: 3.25rem;
+
+  /* ---- Spacing (4px base) ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+  --space-9: 6.5rem;
+
+  /* ---- Shape / motion ---- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 18px;
+  --radius-pill: 999px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.04) inset, 0 20px 50px -20px rgba(0, 0, 0, 0.6);
+  --shadow-paper: 0 30px 60px -25px rgba(0, 0, 0, 0.55), 0 2px 0 rgba(255, 255, 255, 0.5) inset;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --step-5: 2.5rem;
+    --step-4: 1.95rem;
+    --step-3: 1.5rem;
+  }
+}
