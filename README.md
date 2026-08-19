@@ -1,3 +1,6 @@
+<p align="center">
+  <img src="screenshots/agentic research orchestrater potrait.png" alt="Marginalia — a desk for reading" width="100%">
+</p>
 <div align="center">
 
 # 🧭 Agentic Research Orchestrator
